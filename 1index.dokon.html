@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Kanselyariya Do'koni | 62 ta mahsulot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            padding: 10px;
+            background: #e9ecef;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        input, select, button {
+            font-size: 16px;
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            width: 100%;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .btn-danger { background: #e74c3c; }
+        .btn-success { background: #27ae60; }
+        .btn-warning { background: #f39c12; color: black; }
+        .btn-purple { background: #9b59b6; }
+        .btn-edit { background: #3498db; }
+        .flex {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .flex input, .flex select, .flex button {
+            flex: 1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-top: 10px;
+        }
+        .product-item {
+            background: #f8f9fa;
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .product-info {
+            flex: 3;
+        }
+        .product-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .product-buttons button {
+            width: auto;
+            padding: 5px 12px;
+            margin: 0;
+            font-size: 14px;
+        }
+        .payment-section {
+            background: #f1f9ff;
+            padding: 12px;
+            border-radius: 16px;
+            margin-top: 15px;
+        }
+        .report-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .report-buttons button {
+            flex: 1;
+            font-size: 14px;
+            padding: 10px;
+        }
+        .report-content {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 12px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        @media print {
+            .no-print { display: none; }
+        }
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .edit-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 350px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Mahsulotlar -->
+    <div class="card no-print">
+        <h3>📦 Mahsulotlar (62 ta)</h3>
+        <div class="flex">
+            <input type="text" id="searchProduct" placeholder="🔍 Qidirish...">
+        </div>
+        <div class="flex">
+            <input type="text" id="prodName" placeholder="Yangi mahsulot">
+            <input type="number" id="prodPrice" placeholder="Narx">
+            <button id="addProdBtn">➕ Qo'shish</button>
+        </div>
+        <div id="productsDiv" style="max-height: 250px; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Savdo cheki -->
+    <div class="card">
+        <h3>🧾 Savdo cheki</h3>
+        <input type="text" id="customerName" placeholder="Mijoz ismi">
+        
+        <div class="flex">
+            <select id="productSelect"></select>
+            <input type="number" id="qty" placeholder="Soni" value="1">
+            <button id="addItemBtn">➕ Qo'shish</button>
+        </div>
+        
+        <div id="cartDiv" style="max-height: 200px; overflow-y: auto;"></div>
+        <div class="total" id="totalAmount">Jami: 0 so'm</div>
+        
+        <div class="payment-section">
+            <div class="flex">
+                <div style="flex:1">
+                    <label>💰 Umumiy:</label>
+                    <input type="number" id="totalSumDisplay" readonly style="background:#e9ecef;">
+                </div>
+                <div style="flex:1">
+                    <label>💵 Mijoz berdi:</label>
+                    <input type="number" id="paidAmount" placeholder="0" value="0">
+                </div>
+            </div>
+            <div class="flex">
+                <div style="flex:1">
+                    <label>📉 Qarzdorlik:</label>
+                    <input type="text" id="debtAmount" readonly style="background:#ffe6e6; color:#e74c3c;">
+                </div>
+                <div style="flex:1">
+                    <label>🔄 Qaytim:</label>
+                    <input type="text" id="changeAmount" readonly style="background:#e6ffe6; color:#27ae60;">
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex">
+            <button id="saveBtn" class="btn-success">💾 Saqlash</button>
+            <button id="printBtn" class="btn-purple">🖨️ Pechat</button>
+            <button id="pdfBtn" class="btn-warning">📄 PDF</button>
+            <button id="clearBtn" class="btn-danger">🗑 Tozalash</button>
+        </div>
+    </div>
+
+    <!-- Hisobot -->
+    <div class="card no-print">
+        <h3>📊 Hisobot</h3>
+        <div class="report-buttons">
+            <button id="allReportBtn" class="btn-success">📋 Umumiy hisobot</button>
+            <button id="dailyBtn" class="btn-warning">📅 Bugungi savdolar</button>
+            <button id="customersBtn" class="btn-purple">👥 Mijozlar ro'yxati</button>
+        </div>
+        <div id="reportDiv" class="report-content">
+            <i>📭 Hisobotni ko'rish uchun tugmalarni bosing</i>
+        </div>
+        <button id="resetBtn" class="btn-danger" style="margin-top: 10px;">⚠️ HAMMA MA'LUMOTLARNI O'CHIRISH</button>
+    </div>
+</div>
+
+<!-- Tahrirlash modal oynasi -->
+<div id="editModal" class="edit-modal">
+    <div class="edit-modal-content">
+        <h4>✏️ Mahsulotni tahrirlash</h4>
+        <input type="text" id="editName" placeholder="Mahsulot nomi">
+        <input type="number" id="editPrice" placeholder="Narx">
+        <div class="flex" style="margin-top: 10px;">
+            <button id="saveEditBtn" class="btn-success">💾 Saqlash</button>
+            <button id="cancelEditBtn" class="btn-danger">❌ Bekor qilish</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== 62 TA MAHSULOT (TO'LIQ ICONKALAR BILAN) ==========
+    function getAllProducts() {
+        return [
+            // Qog'oz va daftarlar (1-12) 📄📒
+            {id: 1, name: '📄 A4 Qog\'oz (500 varoq)', price: 25000},
+            {id: 2, name: '📄 A4 Qog\'oz (100 varoq)', price: 7000},
+            {id: 3, name: '📄 A3 Qog\'oz (250 varoq)', price: 35000},
+            {id: 4, name: '📄 Rangli qog\'oz (10 rang)', price: 12000},
+            {id: 5, name: '📄 Rangli qog\'oz (20 rang)', price: 20000},
+            {id: 6, name: '📒 Daftar 12 bet', price: 2000},
+            {id: 7, name: '📒 Daftar 24 bet', price: 3500},
+            {id: 8, name: '📒 Daftar 36 bet', price: 4500},
+            {id: 9, name: '📒 Daftar 48 bet', price: 5500},
+            {id: 10, name: '📒 Daftar 60 bet', price: 7000},
+            {id: 11, name: '📒 Daftar 96 bet', price: 9500},
+            {id: 12, name: '📔 Umumiy daftar 120 bet', price: 15000},
+            
+            // Ruchka va qalamlar (13-24) ✒️✏️
+            {id: 13, name: '✒️ Ruchka ko\'k (oddiy)', price: 2500},
+            {id: 14, name: '✒️ Ruchka qora (oddiy)', price: 2500},
+            {id: 15, name: '✒️ Ruchka qizil (oddiy)', price: 2500},
+            {id: 16, name: '✒️ Ruchka yashil (oddiy)', price: 2500},
+            {id: 17, name: '✒️ Ruchka ko\'k (gel)', price: 5000},
+            {id: 18, name: '✒️ Ruchka qora (gel)', price: 5000},
+            {id: 19, name: '✒️ Ruchka qizil (gel)', price: 5000},
+            {id: 20, name: '✒️ Ruchka ko\'k (siyoh)', price: 8000},
+            {id: 21, name: '✏️ Qalam (oddiy)', price: 2000},
+            {id: 22, name: '✏️ Qalam (mexanik)', price: 5000},
+            {id: 23, name: '✏️ Rangli qalam (12 rang)', price: 12000},
+            {id: 24, name: '✏️ Rangli qalam (24 rang)', price: 22000},
+            
+            // Marker va flomasterlar (25-33) 🖊️🖍️
+            {id: 25, name: '🖊️ Marker qora (doimiy)', price: 8000},
+            {id: 26, name: '🖊️ Marker ko\'k (doimiy)', price: 8000},
+            {id: 27, name: '🖊️ Marker qizil (doimiy)', price: 8000},
+            {id: 28, name: '🖊️ Marker yashil (doimiy)', price: 8000},
+            {id: 29, name: '🖊️ Highlight (sariq)', price: 7000},
+            {id: 30, name: '🖊️ Highlight (pushti)', price: 7000},
+            {id: 31, name: '🖍️ Flomaster (6 rang)', price: 9000},
+            {id: 32, name: '🖍️ Flomaster (12 rang)', price: 15000},
+            {id: 33, name: '🖍️ Flomaster (24 rang)', price: 28000},
+            
+            // Rasm va san'at buyumlari (34-38) 🎨🖌️
+            {id: 34, name: '🖌️ Mo\'yqalam (3 ta)', price: 12000},
+            {id: 35, name: '🖌️ Mo\'yqalam (6 ta)', price: 20000},
+            {id: 36, name: '🎨 Akvarel bo\'yoq (12 rang)', price: 18000},
+            {id: 37, name: '🎨 Akvarel bo\'yoq (24 rang)', price: 32000},
+            {id: 38, name: '🎨 Guash bo\'yoq (12 rang)', price: 22000},
+            
+            // Papka va fayllar (39-46) 📁🗂️
+            {id: 39, name: '📁 Karton papka (A4)', price: 4000},
+            {id: 40, name: '📁 Plastik papka (A4)', price: 8000},
+            {id: 41, name: '🗂️ Regenerator papka', price: 15000},
+            {id: 42, name: '📂 Fayl (100 dona)', price: 25000},
+            {id: 43, name: '📂 Fayl (50 dona)', price: 13000},
+            {id: 44, name: '📂 Fayl (20 dona)', price: 6000},
+            {id: 45, name: '📌 Buklama (katta)', price: 10000},
+            {id: 46, name: '📌 Buklama (kichik)', price: 6000},
+            
+            // Kanselyariya jihozlari (47-54) ✂️📏
+            {id: 47, name: '✂️ Qaychi (katta)', price: 15000},
+            {id: 48, name: '✂️ Qaychi (kichik)', price: 8000},
+            {id: 49, name: '📏 Chizg\'ich 15 sm', price: 2000},
+            {id: 50, name: '📏 Chizg\'ich 30 sm', price: 4000},
+            {id: 51, name: '📐 Transportir', price: 5000},
+            {id: 52, name: '🧽 O\'chirg\'ich (oddiy)', price: 2000},
+            {id: 53, name: '🧽 O\'chirg\'ich (yumshoq)', price: 4000},
+            {id: 54, name: '📎 Skrepka (100 dona)', price: 4000},
+            
+            // Yelim va lenta (55-59) 🩹📦
+            {id: 55, name: '🩹 Yelim (qalam)', price: 4000},
+            {id: 56, name: '🩹 Yelim (PVA 100ml)', price: 7000},
+            {id: 57, name: '🩹 Yelim (moment)', price: 10000},
+            {id: 58, name: '📦 Skotch (keng)', price: 12000},
+            {id: 59, name: '📦 Skotch (ingichka)', price: 7000},
+            
+            // Boshqa mahsulotlar (60-62) 🏷️📆
+            {id: 60, name: '🏷️ Stiker (100 dona)', price: 6000},
+            {id: 61, name: '📆 Stol kalendar', price: 15000},
+            {id: 62, name: '📆 Devor kalendar', price: 25000}
+        ];
+    }
+    
+    // ========== MA'LUMOTLAR ==========
+    let products = [];
+    let sales = [];
+    let cart = [];
+    let editId = null;
+    
+    // ========== SAQLASH (ESKI MA'LUMOTLARNI O'CHIRIB TASHLAYDI) ==========
+    function saveAllData() {
+        localStorage.setItem('products', JSON.stringify(products));
+        localStorage.setItem('sales', JSON.stringify(sales));
+        console.log("💾 Saqlandi | Mahsulotlar: " + products.length + " | Savdolar: " + sales.length);
+    }
+    
+    function loadAllData() {
+        // ESKI MA'LUMOTLARNI TEKSHIRISH - agar 62 tadan kam bo'lsa, qayta yuklash
+        let p = localStorage.getItem('products');
+        if(p) {
+            let parsed = JSON.parse(p);
+            if(parsed.length >= 60) {
+                products = parsed;
+            } else {
+                products = getAllProducts();
+                saveAllData();
+            }
+        } else {
+            products = getAllProducts();
+            saveAllData();
+        }
+        
+        let s = localStorage.getItem('sales');
+        if(s) {
+            sales = JSON.parse(s);
+        } else {
+            sales = [];
+        }
+        
+        console.log("📂 Yuklandi | Mahsulotlar: " + products.length + " | Savdolar: " + sales.length);
+    }
+    
+    // ========== MAHSULOTLARNI KO'RSATISH ==========
+    function showProducts() {
+        let searchText = document.getElementById('searchProduct').value.toLowerCase();
+        let filtered = products.filter(p => p.name.toLowerCase().includes(searchText));
+        
+        let div = document.getElementById('productsDiv');
+        if(filtered.length == 0) {
+            div.innerHTML = '<i>🔍 Mahsulot topilmadi</i>';
+        } else {
+            let html = '';
+            for(let i = 0; i < filtered.length; i++) {
+                html += `<div class="product-item">
+                            <div class="product-info">
+                                <b>${filtered[i].name}</b> - ${filtered[i].price.toLocaleString()} so'm
+                            </div>
+                            <div class="product-buttons">
+                                <button onclick="editProduct(${filtered[i].id})" class="btn-edit" style="background:#3498db;">✏️</button>
+                                <button onclick="deleteProduct(${filtered[i].id})" style="background:#e74c3c;">🗑</button>
+                            </div>
+                        </div>`;
+            }
+            div.innerHTML = html;
+        }
+        
+        let select = document.getElementById('productSelect');
+        select.innerHTML = '';
+        for(let i = 0; i < products.length; i++) {
+            let option = document.createElement('option');
+            option.value = products[i].id;
+            option.text = products[i].name + ' - ' + products[i].price.toLocaleString() + ' so\'m';
+            select.appendChild(option);
+        }
+    }
+    
+    // TAHRIRLASH
+    window.editProduct = function(id) {
+        let product = products.find(p => p.id == id);
+        if(product) {
+            editId = id;
+            document.getElementById('editName').value = product.name;
+            document.getElementById('editPrice').value = product.price;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+    };
+    
+    document.getElementById('saveEditBtn').onclick = function() {
+        if(editId) {
+            let newName = document.getElementById('editName').value.trim();
+            let newPrice = parseInt(document.getElementById('editPrice').value);
+            if(newName && !isNaN(newPrice) && newPrice > 0) {
+                for(let i = 0; i < products.length; i++) {
+                    if(products[i].id == editId) {
+                        products[i].name = newName;
+                        products[i].price = newPrice;
+                        break;
+                    }
+                }
+                saveAllData();
+                showProducts();
+                document.getElementById('editModal').style.display = 'none';
+                alert('✅ Mahsulot tahrirlandi!');
+            } else {
+                alert('❌ Nom va narxni to\'g\'ri kiriting');
+            }
+        }
+    };
+    
+    document.getElementById('cancelEditBtn').onclick = function() {
+        document.getElementById('editModal').style.display = 'none';
+    };
+    
+    window.deleteProduct = function(id) {
+        if(confirm('Mahsulotni o\'chirish?')) {
+            let newProducts = [];
+            for(let i = 0; i < products.length; i++) {
+                if(products[i].id != id) newProducts.push(products[i]);
+            }
+            products = newProducts;
+            saveAllData();
+            showProducts();
+        }
+    };
+    
+    // ========== SAVDO CHEKI ==========
+    function showCart() {
+        let div = document.getElementById('cartDiv');
+        if(cart.length == 0) {
+            div.innerHTML = '<i>🛒 Mahsulot qo\'shilmagan</i>';
+            updateTotal();
+            return;
+        }
+        let html = '<table><th>Mahsulot</th><th>Soni</th><th>Narx</th><th>Summa</th><th></th></tr>';
+        let total = 0;
+        for(let i = 0; i < cart.length; i++) {
+            let sum = cart[i].qty * cart[i].price;
+            total += sum;
+            html += `<tr>
+                        <td>${cart[i].name}</td>
+                        <td>${cart[i].qty}</td>
+                        <td>${cart[i].price.toLocaleString()}</td>
+                        <td>${sum.toLocaleString()}</td>
+                        <td><button onclick="removeFromCart(${i})" style="background:#e74c3c; padding:4px 8px;">❌</button></td>
+                     </tr>`;
+        }
+        html += '</table>';
+        div.innerHTML = html;
+        updateTotal();
+    }
+    
+    function updateTotal() {
+        let total = 0;
+        for(let i = 0; i < cart.length; i++) total += cart[i].qty * cart[i].price;
+        document.getElementById('totalAmount').innerHTML = 'Jami: ' + total.toLocaleString() + ' so\'m';
+        document.getElementById('totalSumDisplay').value = total;
+        calculateDebt();
+    }
+    
+    function calculateDebt() {
+        let total = 0;
+        for(let i = 0; i < cart.length; i++) total += cart[i].qty * cart[i].price;
+        let paid = parseInt(document.getElementById('paidAmount').value) || 0;
+        let debt = total - paid;
+        let change = paid - total;
+        
+        if(debt > 0) {
+            document.getElementById('debtAmount').value = debt.toLocaleString() + " so'm (qarzi)";
+            document.getElementById('changeAmount').value = "0 so'm";
+        } else if(change > 0) {
+            document.getElementById('debtAmount').value = "0 so'm";
+            document.getElementById('changeAmount').value = change.toLocaleString() + " so'm (qaytim)";
+        } else {
+            document.getElementById('debtAmount').value = "0 so'm";
+            document.getElementById('changeAmount').value = "0 so'm";
+        }
+    }
+    
+    window.removeFromCart = function(idx) {
+        let newCart = [];
+        for(let i = 0; i < cart.length; i++) if(i != idx) newCart.push(cart[i]);
+        cart = newCart;
+        showCart();
+    };
+    
+    function addToCart() {
+        let select = document.getElementById('productSelect');
+        let prodId = parseInt(select.value);
+        let qty = parseInt(document.getElementById('qty').value);
+        if(isNaN(qty) || qty < 1) {
+            alert('❌ Soni to\'g\'ri kiriting');
+            return;
+        }
+        
+        let product = null;
+        for(let i = 0; i < products.length; i++) {
+            if(products[i].id == prodId) {
+                product = products[i];
+                break;
+            }
+        }
+        
+        if(!product) {
+            alert('❌ Mahsulot topilmadi');
+            return;
+        }
+        
+        cart.push({ name: product.name, price: product.price, qty: qty });
+        showCart();
+        document.getElementById('qty').value = '1';
+    }
+    
+    // ========== SAVDONI SAQLASH ==========
+    function saveSale() {
+        let customer = document.getElementById('customerName').value.trim();
+        if(customer == '') {
+            alert('❌ Mijoz ismini yozing!');
+            return;
+        }
+        if(cart.length == 0) {
+            alert('❌ Mahsulot qo\'shilmagan!');
+            return;
+        }
+        
+        let total = 0;
+        for(let i = 0; i < cart.length; i++) total += cart[i].qty * cart[i].price;
+        let paid = parseInt(document.getElementById('paidAmount').value) || 0;
+        let debt = (total - paid) > 0 ? (total - paid) : 0;
+        let change = (paid - total) > 0 ? (paid - total) : 0;
+        
+        let sale = {
+            id: Date.now(),
+            customer: customer,
+            date: new Date().toISOString(),
+            dateStr: new Date().toLocaleString('uz-UZ'),
+            items: JSON.parse(JSON.stringify(cart)),
+            total: total,
+            paid: paid,
+            debt: debt,
+            change: change
+        };
+        
+        sales.push(sale);
+        saveAllData();
+        printReceipt(sale);
+        
+        cart = [];
+        showCart();
+        document.getElementById('customerName').value = '';
+        document.getElementById('paidAmount').value = '0';
+        
+        alert('✅ Savdo saqlandi! Jami savdolar: ' + sales.length);
+    }
+    
+    function printReceipt(sale) {
+        let win = window.open('', '_blank');
+        let itemsHtml = '';
+        for(let i = 0; i < sale.items.length; i++) {
+            let item = sale.items[i];
+            itemsHtml += `<tr><td>${item.name}</td><td>${item.qty}</td><td>${item.price.toLocaleString()}</td><td>${(item.qty * item.price).toLocaleString()}</td></tr>`;
+        }
+        
+        win.document.write(`
+            <html>
+            <head><title>Chek - ${sale.customer}</title>
+            <style>
+                body { font-family: monospace; padding: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+            </style>
+            </head>
+            <body>
+                <h2 style="text-align:center;">📎 KANSELYARIYA DO'KONI</h2>
+                <p><strong>Mijoz:</strong> ${sale.customer}</p>
+                <p><strong>Sana:</strong> ${sale.dateStr}</p>
+                <hr>
+                 table ${itemsHtml} 97
+                <hr>
+                <p><strong>Umumiy summa:</strong> ${sale.total.toLocaleString()} so'm</p>
+                <p><strong>Berilgan summa:</strong> ${sale.paid.toLocaleString()} so'm</p>
+                ${sale.debt > 0 ? `<p style="color:red;"><strong>Qarzdorlik:</strong> ${sale.debt.toLocaleString()} so'm</p>` : ''}
+                ${sale.change > 0 ? `<p style="color:green;"><strong>Qaytim:</strong> ${sale.change.toLocaleString()} so'm</p>` : ''}
+                <hr>
+                <p style="text-align:center;">Rahmat! Yana keling!</p>
+                <script>window.print(); setTimeout(()=>window.close(), 1000);<\/script>
+            </body>
+            </html>
+        `);
+        win.document.close();
+    }
+    
+    async function saveAsPDF() {
+        let customer = document.getElementById('customerName').value.trim();
+        if(customer == '') { alert('❌ Mijoz ismini yozing'); return; }
+        if(cart.length == 0) { alert('❌ Mahsulot qo\'shilmagan'); return; }
+        
+        let total = 0;
+        for(let i = 0; i < cart.length; i++) total += cart[i].qty * cart[i].price;
+        let paid = parseInt(document.getElementById('paidAmount').value) || 0;
+        let debt = (total - paid) > 0 ? (total - paid) : 0;
+        let change = (paid - total) > 0 ? (paid - total) : 0;
+        let now = new Date().toLocaleString('uz-UZ');
+        
+        let itemsHtml = '';
+        for(let i = 0; i < cart.length; i++) {
+            itemsHtml += `<tr><td>${cart[i].name}</td><td>${cart[i].qty}</td><td>${cart[i].price.toLocaleString()}</td><td>${(cart[i].qty * cart[i].price).toLocaleString()}</td></tr>`;
+        }
+        
+        let htmlContent = `
+            <div style="font-family: monospace; padding: 20px;">
+                <h2 style="text-align:center;">📎 KANSELYARIYA DO'KONI</h2>
+                <p><strong>Mijoz:</strong> ${customer}</p>
+                <p><strong>Sana:</strong> ${now}</p>
+                <hr>
+                <table style="width:100%; border-collapse:collapse;"><tr><th>Mahsulot</th><th>Soni</th><th>Narx</th><th>Summa</th></tr>${itemsHtml}</table>
+                <hr>
+                <p><strong>Umumiy summa:</strong> ${total.toLocaleString()} so'm</p>
+                <p><strong>Berilgan summa:</strong> ${paid.toLocaleString()} so'm</p>
+                ${debt > 0 ? `<p style="color:red;"><strong>Qarzdorlik:</strong> ${debt.toLocaleString()} so'm</p>` : ''}
+                ${change > 0 ? `<p style="color:green;"><strong>Qaytim:</strong> ${change.toLocaleString()} so'm</p>` : ''}
+            </div>
+        `;
+        
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        document.body.appendChild(tempDiv);
+        
+        try {
+            let opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `chek_${customer}_${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'a5', orientation: 'portrait' }
+            };
+            await html2pdf().set(opt).from(tempDiv).save();
+            alert("✅ PDF saqlandi!");
+        } catch(e) {
+            alert("❌ Xatolik: " + e.message);
+        }
+        document.body.removeChild(tempDiv);
+    }
+    
+    function printOnly() {
+        if(cart.length == 0) { alert('❌ Mahsulot qo\'shilmagan'); return; }
+        let customer = document.getElementById('customerName').value.trim();
+        if(customer == '') customer = 'Mijoz';
+        let total = 0;
+        for(let i = 0; i < cart.length; i++) total += cart[i].qty * cart[i].price;
+        let paid = parseInt(document.getElementById('paidAmount').value) || 0;
+        let debt = (total - paid) > 0 ? (total - paid) : 0;
+        let change = (paid - total) > 0 ? (paid - total) : 0;
+        
+        let fakeSale = {
+            customer: customer,
+            items: cart,
+            total: total,
+            paid: paid,
+            debt: debt,
+            change: change,
+            dateStr: new Date().toLocaleString('uz-UZ')
+        };
+        printReceipt(fakeSale);
+    }
+    
+    // ========== HISOBOTLAR ==========
+    function showAllReport() {
+        let reportDiv = document.getElementById('reportDiv');
+        if(sales.length == 0) {
+            reportDiv.innerHTML = '<i>📭 Hali hech qanday savdo qilinmagan</i>';
+            return;
+        }
+        
+        let totalSales = sales.length;
+        let totalIncome = 0;
+        let totalDebt = 0;
+        for(let i = 0; i < sales.length; i++) {
+            totalIncome += sales[i].total;
+            totalDebt += sales[i].debt;
+        }
+        
+        let lastSales = [];
+        for(let i = sales.length - 1; i >= Math.max(0, sales.length - 5); i--) {
+            lastSales.push(sales[i]);
+        }
+        
+        let lastHtml = '';
+        for(let i = 0; i < lastSales.length; i++) {
+            lastHtml += '<li><b>' + lastSales[i].customer + '</b> - ' + lastSales[i].total.toLocaleString() + ' so\'m (' + lastSales[i].dateStr + ')</li>';
+        }
+        
+        reportDiv.innerHTML = `
+            <div style="background:white; padding:10px; border-radius:12px;">
+                <h4>📊 UMUMIY HISOBOT</h4>
+                <p>📈 Jami savdolar: <b>${totalSales}</b> ta</p>
+                <p>💰 Umumiy tushum: <b>${totalIncome.toLocaleString()}</b> so'm</p>
+                <p>📉 Umumiy qarzdorlik: <b style="color:#e74c3c;">${totalDebt.toLocaleString()}</b> so'm</p>
+                <hr>
+                <h5>🕐 So'nggi 5 savdo:</h5>
+                <ul>${lastHtml}</ul>
+            </div>
+        `;
+    }
+    
+    function showDailyReport() {
+        let reportDiv = document.getElementById('reportDiv');
+        let today = new Date().toISOString().slice(0,10);
+        let total = 0;
+        let count = 0;
+        let dailySales = [];
+        
+        for(let i = 0; i < sales.length; i++) {
+            if(sales[i].date.startsWith(today)) {
+                total += sales[i].total;
+                count++;
+                dailySales.push(sales[i]);
+            }
+        }
+        
+        if(count == 0) {
+            reportDiv.innerHTML = '<i>📭 Bugun hech qanday savdo yo\'q</i>';
+            return;
+        }
+        
+        let salesHtml = '';
+        for(let i = 0; i < dailySales.length; i++) {
+            salesHtml += '<li><b>' + dailySales[i].customer + '</b> - ' + dailySales[i].total.toLocaleString() + ' so\'m</li>';
+        }
+        
+        reportDiv.innerHTML = `
+            <div style="background:white; padding:10px; border-radius:12px;">
+                <h4>📅 BUGUNGI HISOBOT (${today})</h4>
+                <p>📈 Savdolar soni: <b>${count}</b> ta</p>
+                <p>💰 Jami tushum: <b>${total.toLocaleString()}</b> so'm</p>
+                <hr>
+                <h5>📋 Mijozlar:</h5>
+                <ul>${salesHtml}</ul>
+            </div>
+        `;
+    }
+    
+    function showCustomersList() {
+        let reportDiv = document.getElementById('reportDiv');
+        if(sales.length == 0) {
+            reportDiv.innerHTML = '<i>👥 Hali hech qanday mijoz yo\'q</i>';
+            return;
+        }
+        
+        let customersMap = {};
+        for(let i = 0; i < sales.length; i++) {
+            let name = sales[i].customer;
+            if(!customersMap[name]) {
+                customersMap[name] = { totalSpent: 0, totalDebt: 0, count: 0 };
+            }
+            customersMap[name].totalSpent += sales[i].total;
+            customersMap[name].totalDebt += sales[i].debt;
+            customersMap[name].count++;
+        }
+        
+        let html = '<div style="background:white; padding:10px; border-radius:12px;"><h4>👥 MIJOZLAR RO\'YXATI</h4>';
+        for(let name in customersMap) {
+            let c = customersMap[name];
+            html += `
+                <div style="border-bottom:1px solid #ddd; padding:8px 0;">
+                    <b>${name}</b><br>
+                    🛒 Xaridlar: ${c.count} ta | 💰 ${c.totalSpent.toLocaleString()} so'm<br>
+                    ${c.totalDebt > 0 ? '<span style="color:#e74c3c;">📉 Qarzi: ' + c.totalDebt.toLocaleString() + ' so\'m</span>' : '<span style="color:green;">✅ Qarzi yo\'q</span>'}
+                </div>
+            `;
+        }
+        html += '</div>';
+        reportDiv.innerHTML = html;
+    }
+    
+    function clearCart() {
+        if(confirm('Chekni tozalaysizmi?')) {
+            cart = [];
+            showCart();
+            document.getElementById('paidAmount').value = '0';
+        }
+    }
+    
+    function resetAll() {
+        if(confirm('⚠️ HAMMA MA\'LUMOTLAR O\'CHIRILADI! Rozimisiz?')) {
+            localStorage.clear();
+            products = getAllProducts();
+            sales = [];
+            cart = [];
+            saveAllData();
+            showProducts();
+            showCart();
+            document.getElementById('reportDiv').innerHTML = '<i>✅ Barcha ma\'lumotlar tiklandi</i>';
+            alert('✅ Barcha ma\'lumotlar o\'chirildi! 62 ta mahsulot tiklandi.');
+        }
+    }
+    
+    // ========== EVENTLAR ==========
+    document.getElementById('addProdBtn').onclick = function() {
+        let name = document.getElementById('prodName').value.trim();
+        let price = parseInt(document.getElementById('prodPrice').value);
+        if(name == '' || isNaN(price) || price <= 0) {
+            alert('❌ Mahsulot nomi va narxini kiriting');
+            return;
+        }
+        products.push({ id: Date.now(), name: name, price: price });
+        saveAllData();
+        showProducts();
+        document.getElementById('prodName').value = '';
+        document.getElementById('prodPrice').value = '';
+    };
+    
+    document.getElementById('addItemBtn').onclick = addToCart;
+    document.getElementById('saveBtn').onclick = saveSale;
+    document.getElementById('printBtn').onclick = printOnly;
+    document.getElementById('pdfBtn').onclick = saveAsPDF;
+    document.getElementById('clearBtn').onclick = clearCart;
+    document.getElementById('allReportBtn').onclick = showAllReport;
+    document.getElementById('dailyBtn').onclick = showDailyReport;
+    document.getElementById('customersBtn').onclick = showCustomersList;
+    document.getElementById('resetBtn').onclick = resetAll;
+    document.getElementById('paidAmount').oninput = calculateDebt;
+    document.getElementById('searchProduct').oninput = showProducts;
+    
+    // ========== BOSHLASH ==========
+    loadAllData();
+    showProducts();
+    showCart();
+    
+    console.log("🚀 Sayt yuklandi | Mahsulotlar: " + products.length + " | Savdolar: " + sales.length);
+</script>
+</body>
+</html>
